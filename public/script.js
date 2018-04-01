@@ -6,19 +6,34 @@ new Vue({
         total: 0,
         items: [],
         cart: [],
-        newSearch: 'blondes',
+        results: [],
+        newSearch: '70s',
         lastSearch: '',
         loading: false,
         price: PRICE
     },
+    computed: {
+        noMoreItems() {
+            return this.items.length === this.results.length && this.results.length > 0;
+        }
+    },
     methods: {
+        appendItems() {
+            if (this.items.length < this.results.length) {
+                let partials = this.results.slice(this.items.length, this.items.length + 10);
+                console.log(partials);
+                // this.items.push(this.results.slice(this.items.length++, this.items.length + 10));
+                this.items = this.items.concat(partials);
+            }
+        },
         onSubmit() {
             this.items = [];
             this.loading = true;
             this.$http.get(`/search/${this.newSearch}`)
             .then(function (result) {
                 this.lastSearch = this.newSearch;
-                this.items = result.data;
+                this.results = result.data;
+                this.items = result.data.slice(0, 10);
                 this.loading = false;
             })
         },
@@ -61,5 +76,11 @@ new Vue({
     },
     mounted() {
         this.onSubmit()
+        let vueInstance = this;
+        let elem = document.getElementById('product-list-bottom');
+        let watcher = scrollMonitor.create(elem);
+        watcher.enterViewport(() => {
+            vueInstance.appendItems();
+        })
     }
 });
