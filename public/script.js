@@ -27,6 +27,9 @@ new Vue({
             }
         },
         onSubmit() {
+            if (this.newSearch.length < 1) {
+                return;
+            }
             this.items = [];
             this.loading = true;
             this.$http.get(`/search/${this.newSearch}`)
